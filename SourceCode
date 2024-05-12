@@ -1,0 +1,35 @@
+import os
+import requests
+from bs4 import BeautifulSoup
+import csv
+
+# Function to scrape the table data and save it to a CSV file
+def scrape_table_to_csv(url, output_file):
+    # Send a GET request to the URL
+    response = requests.get(url)
+    # Parse the HTML content of the page
+    soup = BeautifulSoup(response.content, 'html.parser')
+    
+    # Find the table with class "wikitable sortable"
+    table = soup.find('table', class_='wikitable sortable')
+    if table:
+        # Open a CSV file in write mode
+        with open(output_file, 'w', newline='', encoding='utf-8') as csvfile:
+            writer = csv.writer(csvfile)
+            # Iterate over each row in the table
+            for row in table.find_all('tr'):
+                # Extract data from each cell in the row
+                row_data = [cell.get_text(strip=True) for cell in row.find_all(['th', 'td'])]
+                # Write the row data to the CSV file
+                writer.writerow(row_data)
+        print(f"Table scraped successfully. Data saved to '{output_file}'")
+    else:
+        print("Table not found on the page.")
+
+# URL of the webpage containing the table
+url = "https://en.wikipedia.org/wiki/List_of_largest_companies_in_the_United_States_by_revenue"
+# Output CSV file path in the Downloads folder
+output_file = os.path.join(os.path.expanduser('~'), 'Downloads', 'table_data.csv')
+
+# Call the function to scrape the table and save it to CSV
+scrape_table_to_csv(url, output_file)
